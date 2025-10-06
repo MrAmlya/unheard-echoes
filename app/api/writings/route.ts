@@ -3,6 +3,7 @@ import { Writing } from '@/types'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { readWritings, createWriting } from '@/lib/writings-prisma'
+import { getUserById } from '@/lib/users-prisma'
 
 // GET - Fetch all writings (public - shows only approved writings)
 export async function GET() {
@@ -45,8 +46,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Verify user exists in database
+    const dbUser = await getUserById(session.user.id)
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: 'User not found in database. Please sign in again.' },
+        { status: 401 }
+      )
+    }
+
     // Admin writings are auto-approved, others are pending
-    const isAdmin = session.user.role === 'admin'
+    const isAdmin = dbUser.role === 'admin'
     
     const newWriting = await createWriting({
       title: title || undefined,
