@@ -83,14 +83,23 @@ export async function updateWriting(
   try {
     const updateData: any = {}
     
+    // Handle basic writing fields
+    if (updates.title !== undefined) updateData.title = updates.title
+    if (updates.content !== undefined) updateData.content = updates.content
+    if (updates.category !== undefined) updateData.category = updates.category
+    if (updates.author !== undefined) updateData.author = updates.author
+    
+    // Handle likes
     if (updates.likes !== undefined) {
       updateData.likes = updates.likes
     }
     
+    // Handle comments
     if (updates.comments !== undefined) {
       updateData.comments = updates.comments as any
     }
     
+    // Handle status and review fields
     if (updates.status !== undefined) {
       updateData.status = updates.status
       updateData.reviewedAt = updates.reviewedAt ? new Date(updates.reviewedAt) : null
