@@ -1,0 +1,18 @@
+[
+  {
+    "id": "1759705378150",
+    "email": "asbhadane21@gmail.com",
+    "name": "MrAmlya",
+    "password": "$2b$10$CyX9LeFAlX7WDHpJTglSEOHE9yQisanMIjmD/dQajD6lRTjylYDcK",
+    "role": "admin",
+    "createdAt": "2025-10-05T23:02:58.150Z"
+  },
+  {
+    "id": "1759706534673",
+    "email": "amlyabhadane@gmail.com",
+    "name": "MrAmlya",
+    "password": "$2b$10$x8HrB0VtxVr3oKTp/3CsfOsChMPT40RrNZ2gYTB66/gN/vJISyPq2",
+    "role": "user",
+    "createdAt": "2025-10-05T23:22:14.673Z"
+  }
+]
