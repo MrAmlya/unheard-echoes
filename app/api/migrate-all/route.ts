@@ -4,7 +4,10 @@ import { prisma } from '@/lib/prisma'
 // POST - Create admin user and sample writings
 export async function POST() {
   try {
-    let results = {
+    let results: {
+      adminUser: { id: string; email: string; role: string } | null;
+      writings: { id: string; title: string | null }[];
+    } = {
       adminUser: null,
       writings: []
     }

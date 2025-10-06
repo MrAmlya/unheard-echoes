@@ -57,7 +57,7 @@ export async function POST() {
             reviewedAt: writing.reviewedAt ? new Date(writing.reviewedAt) : null,
             reviewedBy: writing.reviewedBy || null,
             likes: writing.likes || 0,
-            comments: writing.comments || [],
+            comments: (writing.comments || []) as any,
           }
         })
         migratedWritings++
