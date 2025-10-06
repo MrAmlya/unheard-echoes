@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
-import { ensureTablesExist } from '@/lib/db'
+import { initDatabase, testConnection } from '@/lib/db-connection'
 
 // POST - Initialize database tables (one-time setup)
 export async function POST() {
   try {
-    await ensureTablesExist()
+    const result = await initDatabase()
     return NextResponse.json({ 
-      message: 'Database initialized successfully',
+      message: result.message,
       status: 'success'
     })
   } catch (error) {
@@ -24,11 +24,21 @@ export async function POST() {
 // GET - Check database status
 export async function GET() {
   try {
-    await ensureTablesExist()
-    return NextResponse.json({ 
-      message: 'Database is ready',
-      status: 'success'
-    })
+    const result = await testConnection()
+    if (result.success) {
+      return NextResponse.json({ 
+        message: 'Database is ready',
+        status: 'success'
+      })
+    } else {
+      return NextResponse.json(
+        { 
+          error: 'Database not ready',
+          details: result.message
+        },
+        { status: 500 }
+      )
+    }
   } catch (error) {
     console.error('Error checking database:', error)
     return NextResponse.json(
