@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getWritingById, updateWriting } from '@/lib/writings'
+import { getWritingById, updateWriting } from '@/lib/writings-prisma'
 
 // POST - Toggle like on a writing (public - no auth required)
 export async function POST(

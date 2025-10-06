@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Writing } from '@/types'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { readWritings, createWriting } from '@/lib/writings'
+import { readWritings, createWriting } from '@/lib/writings-prisma'
 
 // GET - Fetch all writings (public - shows only approved writings)
 export async function GET() {

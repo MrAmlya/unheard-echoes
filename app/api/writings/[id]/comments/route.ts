@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Comment } from '@/types'
-import { getWritingById, updateWriting } from '@/lib/writings'
+import { getWritingById, updateWriting } from '@/lib/writings-prisma'
 
 // POST - Add a comment (public - no auth required)
 export async function POST(

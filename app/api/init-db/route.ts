@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { initDatabase, testConnection } from '@/lib/db-connection'
+import { initDatabase, testConnection } from '@/lib/db-prisma'
 
 // POST - Initialize database tables (one-time setup)
 export async function POST() {
