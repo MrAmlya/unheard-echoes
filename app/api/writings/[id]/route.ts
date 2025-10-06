@@ -1,30 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
-import { Writing } from '@/types'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-
-const DATA_FILE = path.join(process.cwd(), 'data', 'writings.json')
-
-async function readWritings(): Promise<Writing[]> {
-  try {
-    const fileContent = await fs.readFile(DATA_FILE, 'utf-8')
-    return JSON.parse(fileContent)
-  } catch (error) {
-    return []
-  }
-}
-
-async function writeWritings(writings: Writing[]) {
-  const dataDir = path.join(process.cwd(), 'data')
-  try {
-    await fs.access(dataDir)
-  } catch {
-    await fs.mkdir(dataDir, { recursive: true })
-  }
-  await fs.writeFile(DATA_FILE, JSON.stringify(writings, null, 2))
-}
+import { getWritingById, updateWriting, deleteWriting } from '@/lib/writings-prisma'
+import { getUserById } from '@/lib/users-prisma'
 
 // GET - Fetch single writing
 export async function GET(
@@ -32,8 +10,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const writings = await readWritings()
-    const writing = writings.find((w) => w.id === params.id)
+    const writing = await getWritingById(params.id)
 
     if (!writing) {
       return NextResponse.json(
@@ -44,8 +21,12 @@ export async function GET(
 
     return NextResponse.json(writing)
   } catch (error) {
+    console.error('Error fetching writing:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch writing' },
+      { 
+        error: 'Failed to fetch writing',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
@@ -66,6 +47,15 @@ export async function PUT(
       )
     }
 
+    // Verify user exists in database
+    const dbUser = await getUserById(session.user.id)
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: 'User not found in database. Please sign in again.' },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json()
     const { title, content, category, author } = body
 
@@ -76,10 +66,9 @@ export async function PUT(
       )
     }
 
-    const writings = await readWritings()
-    const index = writings.findIndex((w) => w.id === params.id)
-
-    if (index === -1) {
+    // Check if writing exists
+    const existingWriting = await getWritingById(params.id)
+    if (!existingWriting) {
       return NextResponse.json(
         { error: 'Writing not found' },
         { status: 404 }
@@ -87,27 +76,29 @@ export async function PUT(
     }
 
     // Check if user owns this writing
-    if (writings[index].userId !== session.user.id) {
+    if (existingWriting.userId !== session.user.id) {
       return NextResponse.json(
         { error: 'Forbidden. You can only edit your own writings.' },
         { status: 403 }
       )
     }
 
-    writings[index] = {
-      ...writings[index],
+    // Update the writing
+    const updatedWriting = await updateWriting(params.id, {
       title: title || undefined,
       content,
       category,
       author: author || undefined,
-    }
+    })
 
-    await writeWritings(writings)
-
-    return NextResponse.json(writings[index])
+    return NextResponse.json(updatedWriting)
   } catch (error) {
+    console.error('Error updating writing:', error)
     return NextResponse.json(
-      { error: 'Failed to update writing' },
+      { 
+        error: 'Failed to update writing',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
@@ -128,9 +119,17 @@ export async function DELETE(
       )
     }
 
-    const writings = await readWritings()
-    const writing = writings.find((w) => w.id === params.id)
+    // Verify user exists in database
+    const dbUser = await getUserById(session.user.id)
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: 'User not found in database. Please sign in again.' },
+        { status: 401 }
+      )
+    }
 
+    // Check if writing exists
+    const writing = await getWritingById(params.id)
     if (!writing) {
       return NextResponse.json(
         { error: 'Writing not found' },
@@ -146,13 +145,23 @@ export async function DELETE(
       )
     }
 
-    const filteredWritings = writings.filter((w) => w.id !== params.id)
-    await writeWritings(filteredWritings)
+    // Delete the writing
+    const success = await deleteWriting(params.id)
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Failed to delete writing' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({ message: 'Writing deleted successfully' })
   } catch (error) {
+    console.error('Error deleting writing:', error)
     return NextResponse.json(
-      { error: 'Failed to delete writing' },
+      { 
+        error: 'Failed to delete writing',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
