@@ -1,28 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
-import { Writing, Comment } from '@/types'
-
-const DATA_FILE = path.join(process.cwd(), 'data', 'writings.json')
-
-async function readWritings(): Promise<Writing[]> {
-  try {
-    const fileContent = await fs.readFile(DATA_FILE, 'utf-8')
-    return JSON.parse(fileContent)
-  } catch (error) {
-    return []
-  }
-}
-
-async function writeWritings(writings: Writing[]) {
-  const dataDir = path.join(process.cwd(), 'data')
-  try {
-    await fs.access(dataDir)
-  } catch {
-    await fs.mkdir(dataDir, { recursive: true })
-  }
-  await fs.writeFile(DATA_FILE, JSON.stringify(writings, null, 2))
-}
+import { Comment } from '@/types'
+import { getWritingById, updateWriting } from '@/lib/writings'
 
 // POST - Add a comment (public - no auth required)
 export async function POST(
@@ -55,10 +33,9 @@ export async function POST(
       )
     }
 
-    const writings = await readWritings()
-    const index = writings.findIndex((w) => w.id === params.id)
+    const writing = await getWritingById(params.id)
 
-    if (index === -1) {
+    if (!writing) {
       return NextResponse.json(
         { error: 'Writing not found' },
         { status: 404 }
@@ -73,22 +50,21 @@ export async function POST(
       date: new Date().toISOString(),
     }
 
-    // Initialize comments array if it doesn't exist
-    if (!writings[index].comments) {
-      writings[index].comments = []
-    }
-
-    writings[index].comments.push(newComment)
-
-    await writeWritings(writings)
+    // Add comment to existing comments
+    const updatedComments = [...(writing.comments || []), newComment]
+    await updateWriting(params.id, { comments: updatedComments })
 
     return NextResponse.json({ 
       comment: newComment,
       message: 'Comment added successfully'
     })
   } catch (error) {
+    console.error('Error adding comment:', error)
     return NextResponse.json(
-      { error: 'Failed to add comment' },
+      { 
+        error: 'Failed to add comment',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
