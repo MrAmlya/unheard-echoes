@@ -1,24 +1,13 @@
 import { NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
-import { Writing } from '@/types'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { readWritings } from '@/lib/writings-prisma'
+import { getUserById } from '@/lib/users-prisma'
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'writings.json')
-
-async function readWritings(): Promise<Writing[]> {
-  try {
-    const fileContent = await fs.readFile(DATA_FILE, 'utf-8')
-    return JSON.parse(fileContent)
-  } catch (error) {
-    return []
-  }
-}
-
-// GET - Fetch user's own writings only
+// GET - Fetch user's own writings
 export async function GET() {
   try {
+    // Check authentication
     const session = await getServerSession(authOptions)
     if (!session || !session.user) {
       return NextResponse.json(
@@ -27,21 +16,28 @@ export async function GET() {
       )
     }
 
-    const writings = await readWritings()
-    // Filter to only show writings belonging to the current user
-    const userWritings = writings.filter((w) => w.userId === session.user.id)
-    
-    // Sort by date, newest first
-    const sortedWritings = userWritings.sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    )
-    
-    return NextResponse.json(sortedWritings)
+    // Verify user exists in database
+    const dbUser = await getUserById(session.user.id)
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: 'User not found in database. Please sign in again.' },
+        { status: 401 }
+      )
+    }
+
+    // Fetch all writings and filter for user's own writings
+    const allWritings = await readWritings()
+    const userWritings = allWritings.filter(writing => writing.userId === session.user.id)
+
+    return NextResponse.json(userWritings)
   } catch (error) {
+    console.error('Error fetching user writings:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch writings' },
+      { 
+        error: 'Failed to fetch user writings',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
 }
-
