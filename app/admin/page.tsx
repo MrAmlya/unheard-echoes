@@ -1,15 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { FiSave, FiTrash2, FiEdit, FiLoader } from 'react-icons/fi'
 import { Writing } from '@/types'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function AdminPage() {
+function AdminContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   
   const [formData, setFormData] = useState({
     title: '',
@@ -34,6 +35,25 @@ export default function AdminPage() {
       fetchWritings()
     }
   }, [status])
+
+  // Handle edit parameter from URL
+  useEffect(() => {
+    const editId = searchParams.get('edit')
+    if (editId && writings.length > 0) {
+      const writingToEdit = writings.find(w => w.id === editId)
+      if (writingToEdit) {
+        setEditingId(editId)
+        setFormData({
+          title: writingToEdit.title || '',
+          content: writingToEdit.content,
+          category: writingToEdit.category as 'shayari' | 'writing' | 'feeling',
+          author: writingToEdit.author || '',
+        })
+        // Scroll to form
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+  }, [searchParams, writings])
 
   const fetchWritings = async () => {
     try {
@@ -77,6 +97,10 @@ export default function AdminPage() {
         setMessage({ type: 'success', text: editingId ? 'Updated successfully!' : 'Added successfully!' })
         setFormData({ title: '', content: '', category: 'shayari', author: '' })
         setEditingId(null)
+        // Clear edit parameter from URL
+        const url = new URL(window.location.href)
+        url.searchParams.delete('edit')
+        window.history.replaceState({}, '', url.toString())
         fetchWritings()
         setTimeout(() => setMessage(null), 3000)
       } else {
@@ -99,6 +123,15 @@ export default function AdminPage() {
     })
     setEditingId(writing.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const clearEdit = () => {
+    setEditingId(null)
+    setFormData({ title: '', content: '', category: 'shayari', author: '' })
+    // Remove edit parameter from URL
+    const url = new URL(window.location.href)
+    url.searchParams.delete('edit')
+    window.history.replaceState({}, '', url.toString())
   }
 
   const handleDelete = async (id: string) => {
@@ -256,10 +289,7 @@ export default function AdminPage() {
             {editingId && (
               <button
                 type="button"
-                onClick={() => {
-                  setEditingId(null)
-                  setFormData({ title: '', content: '', category: 'shayari', author: '' })
-                }}
+                onClick={clearEdit}
                 className="px-6 py-3 rounded-xl glass hover:bg-white/10 transition-all"
               >
                 Cancel
@@ -337,6 +367,21 @@ export default function AdminPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function AdminPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-4"></div>
+          <p className="text-gray-300">Loading...</p>
+        </div>
+      </div>
+    }>
+      <AdminContent />
+    </Suspense>
   )
 }
 
