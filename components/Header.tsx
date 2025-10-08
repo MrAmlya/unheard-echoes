@@ -9,6 +9,8 @@ import { useSession, signOut } from 'next-auth/react'
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [isScrolledUp, setIsScrolledUp] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
   const { data: session, status } = useSession()
   const userMenuRef = useRef<HTMLDivElement>(null)
 
@@ -26,12 +28,51 @@ export default function Header() {
     }
   }, [])
 
+  // Handle scroll behavior for mobile navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      
+      // On mobile, show navbar when scrolling up, hide when scrolling down
+      if (window.innerWidth < 768) {
+        if (currentScrollY < lastScrollY || currentScrollY < 100) {
+          setIsScrolledUp(true)
+        } else {
+          setIsScrolledUp(false)
+        }
+      } else {
+        // On desktop, always show navbar
+        setIsScrolledUp(true)
+      }
+      
+      setLastScrollY(currentScrollY)
+    }
+
+    const handleResize = () => {
+      // Reset scroll state on resize
+      if (window.innerWidth >= 768) {
+        setIsScrolledUp(true)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [lastScrollY])
+
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/' })
   }
 
   return (
-    <header className="glass sticky top-0 z-50 border-b border-white/20">
+    <header 
+      className={`glass border-b border-white/20 z-50 w-full fixed top-0 transition-transform duration-300 ease-in-out ${
+        isScrolledUp ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
       <nav className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
