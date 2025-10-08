@@ -1,7 +1,7 @@
 'use client'
 
 import { Writing } from '@/types'
-import { FiCalendar, FiTag, FiHeart, FiMessageCircle } from 'react-icons/fi'
+import { FiCalendar, FiTag, FiHeart, FiMessageCircle, FiShare2 } from 'react-icons/fi'
 
 interface WritingCardProps {
   writing: Writing
@@ -31,6 +31,24 @@ export default function WritingCard({ writing, onClick }: WritingCardProps) {
     })
   }
 
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent opening the modal
+    const url = `${window.location.origin}/writing/${writing.id}`
+    const text = `Check out this beautiful writing "${writing.title || 'Untitled'}" on Unheard Echoes! 🎭✨`
+    
+    if (navigator.share) {
+      navigator.share({
+        title: writing.title || 'Untitled',
+        text: text,
+        url: url
+      })
+    } else {
+      // Fallback to copying to clipboard
+      navigator.clipboard.writeText(url)
+      alert('Link copied to clipboard!')
+    }
+  }
+
   return (
     <div 
       onClick={onClick}
@@ -42,10 +60,19 @@ export default function WritingCard({ writing, onClick }: WritingCardProps) {
           <FiTag className="inline mr-1" />
           {writing.category}
         </span>
-        <span className="text-gray-400 text-sm flex items-center">
-          <FiCalendar className="mr-1" />
-          {formatDate(writing.date)}
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleShare}
+            className="p-2 rounded-full glass-button hover:scale-110 transition-all"
+            title="Share this writing"
+          >
+            <FiShare2 className="text-blue-400 text-sm" />
+          </button>
+          <span className="text-gray-400 text-sm flex items-center">
+            <FiCalendar className="mr-1" />
+            {formatDate(writing.date)}
+          </span>
+        </div>
       </div>
 
       {/* Title */}

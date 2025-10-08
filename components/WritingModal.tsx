@@ -2,7 +2,7 @@
 
 import { Writing, Comment } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiX, FiCalendar, FiTag, FiUser, FiHeart, FiMessageCircle, FiTrash2 } from 'react-icons/fi'
+import { FiX, FiCalendar, FiTag, FiUser, FiHeart, FiMessageCircle, FiTrash2, FiShare2, FiTwitter, FiFacebook, FiLinkedin, FiCopy } from 'react-icons/fi'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 
@@ -20,6 +20,7 @@ export default function WritingModal({ writing, isOpen, onClose, onUpdate }: Wri
   const [commentText, setCommentText] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasLiked, setHasLiked] = useState(false)
+  const [showShareOptions, setShowShareOptions] = useState(false)
 
   useEffect(() => {
     setLocalWriting(writing)
@@ -29,6 +30,47 @@ export default function WritingModal({ writing, isOpen, onClose, onUpdate }: Wri
       setHasLiked(likedWritings.includes(writing.id))
     }
   }, [writing, session])
+
+  // Social sharing functions
+  const getShareUrl = () => {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/writing/${localWriting?.id}`
+    }
+    return ''
+  }
+
+  const getShareText = () => {
+    if (!localWriting) return ''
+    return `Check out this beautiful writing "${localWriting.title || 'Untitled'}" on Unheard Echoes! 🎭✨`
+  }
+
+  const shareToTwitter = () => {
+    const url = getShareUrl()
+    const text = getShareText()
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}&hashtags=UnheardEchoes,Writing,Poetry`)
+  }
+
+  const shareToFacebook = () => {
+    const url = getShareUrl()
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`)
+  }
+
+  const shareToLinkedIn = () => {
+    const url = getShareUrl()
+    const text = getShareText()
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&title=${encodeURIComponent(localWriting?.title || 'Untitled')}&summary=${encodeURIComponent(text)}`)
+  }
+
+  const copyToClipboard = async () => {
+    const url = getShareUrl()
+    try {
+      await navigator.clipboard.writeText(url)
+      // You could add a toast notification here
+      alert('Link copied to clipboard!')
+    } catch (err) {
+      console.error('Failed to copy: ', err)
+    }
+  }
 
   if (!localWriting) return null
 
@@ -265,6 +307,68 @@ export default function WritingModal({ writing, isOpen, onClose, onUpdate }: Wri
                       {localWriting.likes || 0} {localWriting.likes === 1 ? 'Like' : 'Likes'}
                     </span>
                   </button>
+                </motion.div>
+
+                {/* Share Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="pt-6 border-t border-white/20"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-200 mb-4">Share this writing</h3>
+                    <button
+                      onClick={() => setShowShareOptions(!showShareOptions)}
+                      className="glass-button flex items-center gap-2 px-4 py-2 rounded-full hover:scale-105 transition-all"
+                    >
+                      <FiShare2 className="text-blue-400" />
+                      <span className="text-sm">Share</span>
+                    </button>
+                  </div>
+                  
+                  <AnimatePresence>
+                    {showShareOptions && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                      >
+                        <button
+                          onClick={shareToTwitter}
+                          className="glass-button flex items-center justify-center gap-2 px-4 py-3 rounded-full hover:scale-105 transition-all bg-blue-500/20 hover:bg-blue-500/30"
+                        >
+                          <FiTwitter className="text-blue-400" />
+                          <span className="text-sm">Twitter</span>
+                        </button>
+                        
+                        <button
+                          onClick={shareToFacebook}
+                          className="glass-button flex items-center justify-center gap-2 px-4 py-3 rounded-full hover:scale-105 transition-all bg-blue-600/20 hover:bg-blue-600/30"
+                        >
+                          <FiFacebook className="text-blue-500" />
+                          <span className="text-sm">Facebook</span>
+                        </button>
+                        
+                        <button
+                          onClick={shareToLinkedIn}
+                          className="glass-button flex items-center justify-center gap-2 px-4 py-3 rounded-full hover:scale-105 transition-all bg-blue-700/20 hover:bg-blue-700/30"
+                        >
+                          <FiLinkedin className="text-blue-600" />
+                          <span className="text-sm">LinkedIn</span>
+                        </button>
+                        
+                        <button
+                          onClick={copyToClipboard}
+                          className="glass-button flex items-center justify-center gap-2 px-4 py-3 rounded-full hover:scale-105 transition-all bg-gray-500/20 hover:bg-gray-500/30"
+                        >
+                          <FiCopy className="text-gray-400" />
+                          <span className="text-sm">Copy Link</span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
 
                 {/* Comments Section */}

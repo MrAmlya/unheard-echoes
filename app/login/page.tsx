@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { FiMail, FiLock, FiHeart, FiLoader } from 'react-icons/fi'
+import { FaGoogle, FaGithub } from 'react-icons/fa'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -34,6 +35,21 @@ export default function LoginPage() {
     } catch (err) {
       setError('An error occurred. Please try again.')
     } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSocialLogin = async (provider: string) => {
+    setError('')
+    setLoading(true)
+    
+    try {
+      const result = await signIn(provider, { 
+        callbackUrl: '/admin',
+        redirect: true 
+      })
+    } catch (err) {
+      setError('An error occurred with social login. Please try again.')
       setLoading(false)
     }
   }
@@ -132,6 +148,38 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          {/* Social Login */}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/20"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-gray-900 text-gray-400">Or continue with</span>
+              </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                onClick={() => handleSocialLogin('google')}
+                disabled={loading}
+                className="w-full glass-button flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FaGoogle className="text-red-500" />
+                <span>Google</span>
+              </button>
+
+              <button
+                onClick={() => handleSocialLogin('github')}
+                disabled={loading}
+                className="w-full glass-button flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FaGithub className="text-gray-300" />
+                <span>GitHub</span>
+              </button>
+            </div>
+          </div>
 
           {/* Signup Link */}
           <div className="mt-6 text-center">
