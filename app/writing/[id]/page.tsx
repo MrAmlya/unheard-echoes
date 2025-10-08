@@ -236,9 +236,9 @@ export default function WritingPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="pt-6 border-t border-white/20 mb-8"
+                className="pt-6 border-t border-white/20"
               >
-                <div className="flex items-center gap-2 text-gray-300">
+                <div className="flex items-center justify-center gap-2 text-gray-300 py-4">
                   <FiUser className="text-purple-400" />
                   <span className="text-lg italic">— {writing.author}</span>
                 </div>
@@ -250,21 +250,23 @@ export default function WritingPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="pt-6 border-t border-white/20 mb-8"
+              className="border-t border-white/20"
             >
-              <button
-                onClick={handleLike}
-                className={`flex items-center gap-3 px-6 py-3 rounded-full transition-all ${
-                  hasLiked
-                    ? 'glass-button bg-red-500/20 hover:bg-red-500/30'
-                    : 'glass-button hover:scale-105'
-                }`}
-              >
-                <FiHeart className={hasLiked ? 'fill-red-500 text-red-500' : 'text-red-400'} />
-                <span className="font-medium">
-                  {writing.likes || 0} {writing.likes === 1 ? 'Like' : 'Likes'}
-                </span>
-              </button>
+              <div className="flex justify-start py-4">
+                <button
+                  onClick={handleLike}
+                  className={`flex items-center gap-3 px-6 py-3 rounded-full transition-all ${
+                    hasLiked
+                      ? 'glass-button bg-red-500/20 hover:bg-red-500/30'
+                      : 'glass-button hover:scale-105'
+                  }`}
+                >
+                  <FiHeart className={hasLiked ? 'fill-red-500 text-red-500' : 'text-red-400'} />
+                  <span className="font-medium">
+                    {writing.likes || 0} {writing.likes === 1 ? 'Like' : 'Likes'}
+                  </span>
+                </button>
+              </div>
             </motion.div>
 
             {/* Share Section */}
@@ -272,9 +274,9 @@ export default function WritingPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="pt-6 border-t border-white/20"
+              className="border-t border-white/20"
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between py-4">
                 <h3 className="text-lg font-semibold text-gray-200">Share this writing</h3>
                 <button
                   onClick={() => setShowShareOptions(!showShareOptions)}
@@ -290,7 +292,7 @@ export default function WritingPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                  className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4"
                 >
                   <button
                     onClick={shareToTwitter}
