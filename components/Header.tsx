@@ -1,14 +1,30 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
-import { FiMenu, FiX, FiHeart, FiEdit, FiHome, FiLogOut, FiLogIn, FiUser, FiClock, FiBookOpen } from 'react-icons/fi'
+import { useState, useEffect, useRef } from 'react'
+import { FiMenu, FiX, FiHeart, FiEdit, FiHome, FiLogOut, FiLogIn, FiUser, FiClock, FiBookOpen, FiChevronDown } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const { data: session, status } = useSession()
+  const userMenuRef = useRef<HTMLDivElement>(null)
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/' })
@@ -45,45 +61,79 @@ export default function Header() {
                   <FiEdit />
                   <span>Add Writing</span>
                 </Link>
-                <Link 
-                  href="/my-writings" 
-                  className="flex items-center space-x-2 px-6 py-2 rounded-full bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/50 hover:from-green-500/40 hover:to-emerald-500/40 transition-all"
-                >
-                  <FiBookOpen />
-                  <span>My Writings</span>
-                </Link>
-                {session.user.role === 'admin' && (
-                  <>
-                    <Link 
-                      href="/admin/review" 
-                      className="flex items-center space-x-2 px-6 py-2 rounded-full bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400/50 hover:from-purple-500/40 hover:to-pink-500/40 transition-all"
-                    >
-                      <FiUser />
-                      <span>Review</span>
-                    </Link>
-                    <Link 
-                      href="/admin/history" 
-                      className="flex items-center space-x-2 px-6 py-2 rounded-full bg-gradient-to-r from-blue-500/30 to-cyan-500/30 border border-blue-400/50 hover:from-blue-500/40 hover:to-cyan-500/40 transition-all"
-                    >
-                      <FiClock />
-                      <span>History</span>
-                    </Link>
-                  </>
-                )}
-                <div className="flex items-center space-x-3 px-4 py-2 rounded-full glass">
-                  <FiUser className="text-purple-400" />
-                  <span className="text-sm">{session.user.name}</span>
-                  {session.user.role === 'admin' && (
-                    <span className="text-xs px-2 py-1 rounded-full bg-purple-500/30 text-purple-300">Admin</span>
-                  )}
+                
+                {/* User Menu Dropdown */}
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center space-x-3 px-4 py-2 rounded-full glass hover:bg-white/10 transition-all"
+                  >
+                    <FiUser className="text-purple-400" />
+                    <span className="text-sm">{session.user.name}</span>
+                    {session.user.role === 'admin' && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-purple-500/30 text-purple-300">Admin</span>
+                    )}
+                    <FiChevronDown className={`text-xs transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {/* Dropdown Menu */}
+                  <AnimatePresence>
+                    {isUserMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute right-0 mt-2 w-48 glass rounded-xl shadow-lg z-50"
+                      >
+                        <div className="py-2">
+                          <Link
+                            href="/my-writings"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-all"
+                          >
+                            <FiBookOpen className="text-green-400" />
+                            <span>My Writings</span>
+                          </Link>
+                          
+                          {session.user.role === 'admin' && (
+                            <>
+                              <Link
+                                href="/admin/review"
+                                onClick={() => setIsUserMenuOpen(false)}
+                                className="flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-all"
+                              >
+                                <FiUser className="text-purple-400" />
+                                <span>Review</span>
+                              </Link>
+                              <Link
+                                href="/admin/history"
+                                onClick={() => setIsUserMenuOpen(false)}
+                                className="flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-all"
+                              >
+                                <FiClock className="text-blue-400" />
+                                <span>History</span>
+                              </Link>
+                            </>
+                          )}
+                          
+                          <div className="border-t border-white/10 my-1"></div>
+                          
+                          <button
+                            onClick={() => {
+                              setIsUserMenuOpen(false)
+                              handleSignOut()
+                            }}
+                            className="flex items-center space-x-3 px-4 py-3 hover:bg-red-500/20 transition-all text-red-300 w-full text-left"
+                          >
+                            <FiLogOut />
+                            <span>Sign Out</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center space-x-2 px-4 py-2 rounded-full hover:bg-red-500/20 transition-all text-red-300"
-                >
-                  <FiLogOut />
-                  <span>Sign Out</span>
-                </button>
               </>
             ) : (
               <Link 
@@ -133,53 +183,61 @@ export default function Header() {
                     <FiEdit />
                     <span>Add Writing</span>
                   </Link>
-                  <Link 
-                    href="/my-writings" 
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-2 px-4 py-3 rounded-lg bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/50"
-                  >
-                    <FiBookOpen />
-                    <span>My Writings</span>
-                  </Link>
-                  {session.user.role === 'admin' && (
-                    <>
-                      <Link 
-                        href="/admin/review" 
-                        onClick={() => setIsMenuOpen(false)}
-                        className="flex items-center space-x-2 px-4 py-3 rounded-lg bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400/50"
-                      >
-                        <FiUser />
-                        <span>Review Submissions</span>
-                      </Link>
-                      <Link 
-                        href="/admin/history" 
-                        onClick={() => setIsMenuOpen(false)}
-                        className="flex items-center space-x-2 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-500/30 to-cyan-500/30 border border-blue-400/50"
-                      >
-                        <FiClock />
-                        <span>Review History</span>
-                      </Link>
-                    </>
-                  )}
-                  <div className="flex flex-col px-4 py-3 rounded-lg glass">
-                    <div className="flex items-center space-x-2">
+                  {/* User Section */}
+                  <div className="px-4 py-3 rounded-lg glass">
+                    <div className="flex items-center space-x-2 mb-3">
                       <FiUser className="text-purple-400" />
-                      <span>{session.user.name}</span>
+                      <span className="font-medium">{session.user.name}</span>
+                      {session.user.role === 'admin' && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-purple-500/30 text-purple-300">Admin</span>
+                      )}
                     </div>
-                    {session.user.role === 'admin' && (
-                      <span className="text-xs mt-1 px-2 py-1 rounded-full bg-purple-500/30 text-purple-300 self-start">Admin</span>
-                    )}
+                    
+                    <div className="space-y-2">
+                      <Link
+                        href="/my-writings"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-all"
+                      >
+                        <FiBookOpen className="text-green-400" />
+                        <span>My Writings</span>
+                      </Link>
+                      
+                      {session.user.role === 'admin' && (
+                        <>
+                          <Link
+                            href="/admin/review"
+                            onClick={() => setIsMenuOpen(false)}
+                            className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-all"
+                          >
+                            <FiUser className="text-purple-400" />
+                            <span>Review Submissions</span>
+                          </Link>
+                          <Link
+                            href="/admin/history"
+                            onClick={() => setIsMenuOpen(false)}
+                            className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-all"
+                          >
+                            <FiClock className="text-blue-400" />
+                            <span>Review History</span>
+                          </Link>
+                        </>
+                      )}
+                      
+                      <div className="border-t border-white/10 my-2"></div>
+                      
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false)
+                          handleSignOut()
+                        }}
+                        className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-red-500/20 transition-all text-red-300 w-full text-left"
+                      >
+                        <FiLogOut />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false)
-                      handleSignOut()
-                    }}
-                    className="w-full flex items-center space-x-2 px-4 py-3 rounded-lg hover:bg-red-500/20 transition-all text-red-300"
-                  >
-                    <FiLogOut />
-                    <span>Sign Out</span>
-                  </button>
                 </>
               ) : (
                 <Link 
