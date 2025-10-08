@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { FiMenu, FiX, FiHeart, FiEdit, FiHome, FiLogOut, FiLogIn, FiUser } from 'react-icons/fi'
+import { FiMenu, FiX, FiHeart, FiEdit, FiHome, FiLogOut, FiLogIn, FiUser, FiClock } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
 
@@ -46,13 +46,22 @@ export default function Header() {
                   <span>Add Writing</span>
                 </Link>
                 {session.user.role === 'admin' && (
-                  <Link 
-                    href="/admin/review" 
-                    className="flex items-center space-x-2 px-6 py-2 rounded-full bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400/50 hover:from-purple-500/40 hover:to-pink-500/40 transition-all"
-                  >
-                    <FiUser />
-                    <span>Review</span>
-                  </Link>
+                  <>
+                    <Link 
+                      href="/admin/review" 
+                      className="flex items-center space-x-2 px-6 py-2 rounded-full bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400/50 hover:from-purple-500/40 hover:to-pink-500/40 transition-all"
+                    >
+                      <FiUser />
+                      <span>Review</span>
+                    </Link>
+                    <Link 
+                      href="/admin/history" 
+                      className="flex items-center space-x-2 px-6 py-2 rounded-full bg-gradient-to-r from-blue-500/30 to-cyan-500/30 border border-blue-400/50 hover:from-blue-500/40 hover:to-cyan-500/40 transition-all"
+                    >
+                      <FiClock />
+                      <span>History</span>
+                    </Link>
+                  </>
                 )}
                 <div className="flex items-center space-x-3 px-4 py-2 rounded-full glass">
                   <FiUser className="text-purple-400" />
@@ -118,14 +127,24 @@ export default function Header() {
                     <span>Add Writing</span>
                   </Link>
                   {session.user.role === 'admin' && (
-                    <Link 
-                      href="/admin/review" 
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center space-x-2 px-4 py-3 rounded-lg bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400/50"
-                    >
-                      <FiUser />
-                      <span>Review Submissions</span>
-                    </Link>
+                    <>
+                      <Link 
+                        href="/admin/review" 
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center space-x-2 px-4 py-3 rounded-lg bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400/50"
+                      >
+                        <FiUser />
+                        <span>Review Submissions</span>
+                      </Link>
+                      <Link 
+                        href="/admin/history" 
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center space-x-2 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-500/30 to-cyan-500/30 border border-blue-400/50"
+                      >
+                        <FiClock />
+                        <span>Review History</span>
+                      </Link>
+                    </>
                   )}
                   <div className="flex flex-col px-4 py-3 rounded-lg glass">
                     <div className="flex items-center space-x-2">
