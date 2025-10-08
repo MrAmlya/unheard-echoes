@@ -58,22 +58,22 @@ export default function AdminHistoryPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved':
-        return 'bg-green-500/30 text-green-300 border-green-500/50'
+        return 'bg-green-500 text-white border-green-500'
       case 'rejected':
-        return 'bg-red-500/30 text-red-300 border-red-500/50'
+        return 'bg-red-500 text-white border-red-500'
       default:
-        return 'bg-gray-500/30 text-gray-300 border-gray-500/50'
+        return 'bg-gray-500 text-white border-gray-500'
     }
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'approved':
-        return <FiCheck className="text-green-400" />
+        return <FiCheck className="text-white" />
       case 'rejected':
-        return <FiX className="text-red-400" />
+        return <FiX className="text-white" />
       default:
-        return <FiClock className="text-gray-400" />
+        return <FiClock className="text-white" />
     }
   }
 
@@ -130,7 +130,7 @@ export default function AdminHistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+    <div className="min-h-screen via-purple-900 to-gray-900">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
@@ -168,22 +168,22 @@ export default function AdminHistoryPage() {
               onClick={() => setFilter('approved')}
               className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 filter === 'approved'
-                  ? 'glass-button bg-green-500/20'
+                  ? 'bg-green-500 text-white hover:bg-green-600'
                   : 'glass-button hover:scale-105'
               }`}
             >
-              <FiCheck className="text-green-400" />
+              <FiCheck className={filter === 'approved' ? 'text-white' : 'text-green-400'} />
               Approved ({writings.filter(w => w.status === 'approved').length})
             </button>
             <button
               onClick={() => setFilter('rejected')}
               className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 filter === 'rejected'
-                  ? 'glass-button bg-red-500/20'
+                  ? 'bg-red-500 text-white hover:bg-red-600'
                   : 'glass-button hover:scale-105'
               }`}
             >
-              <FiX className="text-red-400" />
+              <FiX className={filter === 'rejected' ? 'text-white' : 'text-red-400'} />
               Rejected ({writings.filter(w => w.status === 'rejected').length})
             </button>
           </div>
