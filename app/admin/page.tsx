@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { motion } from 'framer-motion'
-import { FiSave, FiTrash2, FiEdit, FiLoader } from 'react-icons/fi'
+import { FiSave, FiTrash2, FiEdit, FiLoader, FiEye } from 'react-icons/fi'
 import { Writing } from '@/types'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -320,7 +320,8 @@ function AdminContent() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="glass-card rounded-xl p-6"
+              className="glass-card rounded-xl p-6 cursor-pointer hover:scale-[1.02] transition-all"
+              onClick={() => window.open(`/writing/${writing.id}`, '_blank')}
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">
@@ -346,14 +347,30 @@ function AdminContent() {
                 </div>
                 <div className="flex gap-2 ml-4">
                   <button
-                    onClick={() => handleEdit(writing)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      window.open(`/writing/${writing.id}`, '_blank')
+                    }}
+                    className="p-2 rounded-lg glass-button hover:bg-green-500/30 transition-all"
+                    title="View Post"
+                  >
+                    <FiEye />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleEdit(writing)
+                    }}
                     className="p-2 rounded-lg glass-button hover:bg-blue-500/30 transition-all"
                     title="Edit"
                   >
                     <FiEdit />
                   </button>
                   <button
-                    onClick={() => handleDelete(writing.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleDelete(writing.id)
+                    }}
                     className="p-2 rounded-lg glass hover:bg-red-500/30 transition-all"
                     title="Delete"
                   >
