@@ -23,12 +23,23 @@ export default function WritingModal({ writing, isOpen, onClose, onUpdate }: Wri
 
   useEffect(() => {
     setLocalWriting(writing)
-  }, [writing])
+    // Check if user has already liked this writing (for anonymous users)
+    if (!session && writing) {
+      const likedWritings = JSON.parse(localStorage.getItem('likedWritings') || '[]')
+      setHasLiked(likedWritings.includes(writing.id))
+    }
+  }, [writing, session])
 
   if (!localWriting) return null
 
   const handleLike = async () => {
-    if (hasLiked) return // Prevent multiple likes
+    // For anonymous users, prevent multiple likes using localStorage
+    if (!session) {
+      const likedWritings = JSON.parse(localStorage.getItem('likedWritings') || '[]')
+      if (likedWritings.includes(localWriting.id)) {
+        return // Already liked, don't allow multiple likes
+      }
+    }
     
     try {
       const response = await fetch(`/api/writings/${localWriting.id}/like`, {
@@ -38,7 +49,17 @@ export default function WritingModal({ writing, isOpen, onClose, onUpdate }: Wri
       if (response.ok) {
         const data = await response.json()
         setLocalWriting({ ...localWriting, likes: data.likes })
-        setHasLiked(true)
+        setHasLiked(data.liked) // Use the API response to determine like status
+        
+        // For anonymous users, track in localStorage
+        if (!session) {
+          const likedWritings = JSON.parse(localStorage.getItem('likedWritings') || '[]')
+          if (data.liked && !likedWritings.includes(localWriting.id)) {
+            likedWritings.push(localWriting.id)
+            localStorage.setItem('likedWritings', JSON.stringify(likedWritings))
+          }
+        }
+        
         if (onUpdate) onUpdate()
       }
     } catch (error) {
@@ -233,10 +254,9 @@ export default function WritingModal({ writing, isOpen, onClose, onUpdate }: Wri
                 >
                   <button
                     onClick={handleLike}
-                    disabled={hasLiked}
                     className={`flex items-center gap-3 px-6 py-3 rounded-full transition-all ${
                       hasLiked
-                        ? 'glass cursor-not-allowed opacity-60'
+                        ? 'glass-button bg-red-500/20 hover:bg-red-500/30'
                         : 'glass-button hover:scale-105'
                     }`}
                   >

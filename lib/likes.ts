@@ -101,6 +101,7 @@ export async function toggleLike(
       }
     } else {
       // Handle anonymous user - always allow liking (no unlike for anonymous)
+      // The frontend will handle preventing multiple likes using localStorage
       await prisma.writing.update({
         where: { id: writingId },
         data: {
