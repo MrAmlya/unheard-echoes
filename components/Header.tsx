@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { FiMenu, FiX, FiHeart, FiEdit, FiHome, FiLogOut, FiLogIn, FiUser, FiClock } from 'react-icons/fi'
+import { FiMenu, FiX, FiHeart, FiEdit, FiHome, FiLogOut, FiLogIn, FiUser, FiClock, FiBookOpen } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
 
@@ -44,6 +44,13 @@ export default function Header() {
                 >
                   <FiEdit />
                   <span>Add Writing</span>
+                </Link>
+                <Link 
+                  href="/my-writings" 
+                  className="flex items-center space-x-2 px-6 py-2 rounded-full bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/50 hover:from-green-500/40 hover:to-emerald-500/40 transition-all"
+                >
+                  <FiBookOpen />
+                  <span>My Writings</span>
                 </Link>
                 {session.user.role === 'admin' && (
                   <>
@@ -125,6 +132,14 @@ export default function Header() {
                   >
                     <FiEdit />
                     <span>Add Writing</span>
+                  </Link>
+                  <Link 
+                    href="/my-writings" 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-2 px-4 py-3 rounded-lg bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/50"
+                  >
+                    <FiBookOpen />
+                    <span>My Writings</span>
                   </Link>
                   {session.user.role === 'admin' && (
                     <>
