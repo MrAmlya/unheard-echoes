@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getWritingById, updateWriting } from '@/lib/writings-prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { getWritingById } from '@/lib/writings-prisma'
+import { toggleLike, getAnonymousId } from '@/lib/likes'
 
-// POST - Toggle like on a writing (public - no auth required)
+// POST - Toggle like on a writing (supports both authenticated and anonymous users)
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -16,19 +19,24 @@ export async function POST(
       )
     }
 
-    // Increment likes count
-    const newLikes = (writing.likes || 0) + 1
-    await updateWriting(params.id, { likes: newLikes })
+    // Check if user is authenticated
+    const session = await getServerSession(authOptions)
+    const userId = session?.user?.id
+    const anonymousId = userId ? undefined : getAnonymousId(request)
+
+    // Toggle the like
+    const result = await toggleLike(params.id, userId, anonymousId)
 
     return NextResponse.json({ 
-      likes: newLikes,
-      message: 'Liked successfully'
+      liked: result.liked,
+      likes: result.likesCount,
+      message: result.liked ? 'Liked successfully' : 'Unliked successfully'
     })
   } catch (error) {
-    console.error('Error liking writing:', error)
+    console.error('Error toggling like:', error)
     return NextResponse.json(
       { 
-        error: 'Failed to like writing',
+        error: 'Failed to toggle like',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }

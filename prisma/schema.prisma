@@ -19,6 +19,7 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   
   writings  Writing[]
+  likes     Like[]
   
   @@map("users")
 }
@@ -38,6 +39,20 @@ model Writing {
   comments   Json      @default("[]")
   
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likesList  Like[]
   
   @@map("writings")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  writingId String   @map("writing_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  writing   Writing  @relation(fields: [writingId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, writingId])
+  @@map("likes")
 }
