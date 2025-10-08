@@ -58,22 +58,22 @@ export default function AdminHistoryPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved':
-        return 'bg-green-500 text-white border-green-500'
+        return 'bg-green-500/30 text-green-300 border-green-500/50'
       case 'rejected':
-        return 'bg-red-500 text-white border-red-500'
+        return 'bg-red-500/30 text-red-300 border-red-500/50'
       default:
-        return 'bg-gray-500 text-white border-gray-500'
+        return 'bg-gray-500/30 text-gray-300 border-gray-500/50'
     }
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'approved':
-        return <FiCheck className="text-white" />
+        return null
       case 'rejected':
-        return <FiX className="text-white" />
+        return <FiX className="text-red-400" />
       default:
-        return <FiClock className="text-white" />
+        return <FiClock className="text-gray-400" />
     }
   }
 
@@ -168,22 +168,22 @@ export default function AdminHistoryPage() {
               onClick={() => setFilter('approved')}
               className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 filter === 'approved'
-                  ? 'bg-green-500 text-white hover:bg-green-600'
+                  ? 'glass-button bg-green-500/20'
                   : 'glass-button hover:scale-105'
               }`}
             >
-              <FiCheck className={filter === 'approved' ? 'text-white' : 'text-green-400'} />
+              <FiCheck className="text-green-400" />
               Approved ({writings.filter(w => w.status === 'approved').length})
             </button>
             <button
               onClick={() => setFilter('rejected')}
               className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
                 filter === 'rejected'
-                  ? 'bg-red-500 text-white hover:bg-red-600'
+                  ? 'glass-button bg-red-500/20'
                   : 'glass-button hover:scale-105'
               }`}
             >
-              <FiX className={filter === 'rejected' ? 'text-white' : 'text-red-400'} />
+              <FiX className="text-red-400" />
               Rejected ({writings.filter(w => w.status === 'rejected').length})
             </button>
           </div>
@@ -226,8 +226,15 @@ export default function AdminHistoryPage() {
                         {writing.category}
                       </span>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(writing.status)}`}>
-                        {getStatusIcon(writing.status)}
-                        <span className="ml-1 capitalize">{writing.status}</span>
+                        {getStatusIcon(writing.status) && (
+                          <>
+                            {getStatusIcon(writing.status)}
+                            <span className="ml-1 capitalize">{writing.status}</span>
+                          </>
+                        )}
+                        {!getStatusIcon(writing.status) && (
+                          <span className="capitalize">{writing.status}</span>
+                        )}
                       </span>
                       <span className="text-gray-400 text-sm flex items-center">
                         <FiCalendar className="mr-1" />
@@ -282,8 +289,15 @@ export default function AdminHistoryPage() {
                         <div>
                           <span className="text-gray-400">Status:</span>
                           <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(writing.status)}`}>
-                            {getStatusIcon(writing.status)}
-                            <span className="ml-1 capitalize">{writing.status}</span>
+                            {getStatusIcon(writing.status) && (
+                              <>
+                                {getStatusIcon(writing.status)}
+                                <span className="ml-1 capitalize">{writing.status}</span>
+                              </>
+                            )}
+                            {!getStatusIcon(writing.status) && (
+                              <span className="capitalize">{writing.status}</span>
+                            )}
                           </span>
                         </div>
                         
